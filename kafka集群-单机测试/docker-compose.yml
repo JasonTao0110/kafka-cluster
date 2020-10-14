@@ -1,0 +1,94 @@
+version: '3.1'
+services:
+    zoo1:
+        image: zookeeper
+        restart: always
+        hostname: zoo1
+        ports:
+            - 2181:2181
+        volumes:
+            - ./datafiles/zoo/zk1/data:/data
+            - ./datafiles/zoo/zk1/datalog:/datalog
+        networks:
+            app_net:
+                # 固定子网ip，网段必须在子网络10.10.*.*
+                ipv4_address: 10.10.10.31
+        environment:
+            ZOO_MY_ID: 1
+            ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    zoo2:
+        image: zookeeper
+        restart: always
+        hostname: zoo2
+        ports:
+            - 2182:2181
+        volumes:
+            - ./datafiles/zoo/zk2/data:/data
+            - ./datafiles/zoo/zk2/datalog:/datalog
+        networks:
+            app_net:
+                # 固定子网ip，网段必须在子网络10.10.*.*
+                ipv4_address: 10.10.10.32
+        environment:
+            ZOO_MY_ID: 2
+            ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+    zoo3:
+        image: zookeeper
+        restart: always
+        hostname: zoo3
+        ports:
+            - 2183:2181
+        volumes:
+            - ./datafiles/zoo/zk3/data:/data
+            - ./datafiles/zoo/zk3/datalog:/datalog
+        networks:
+            app_net:
+                # 固定子网ip，网段必须在子网络10.10.*.*
+                ipv4_address: 10.10.10.33
+        environment:
+            ZOO_MY_ID: 3
+            ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+    kafka1:
+        build: ./build
+        image: kafka2.6.0
+        ports:
+            - "9092:9092"
+        networks:
+            app_net:
+                # 固定子网ip，网段必须在子网络10.10.*.*
+                ipv4_address: 10.10.10.41
+        volumes:
+            - ./config/server1.properties:/usr/local/kafka/config/server.properties
+            - ./datafiles/kafka/kafka1/kafka-logs:/tmp/kafka-logs
+            # - ./datafiles/kafka/kafka1/logs:/usr/local/kafka/logs
+    kafka2:
+        build: ./build
+        image: kafka2.6.0 #wurstmeister/kafka
+        ports:
+            - "9093:9092"
+        networks:
+            app_net:
+                # 固定子网ip，网段必须在子网络10.10.*.*
+                ipv4_address: 10.10.10.42
+        volumes:
+            - ./config/server2.properties:/usr/local/kafka/config/server.properties
+            - ./datafiles/kafka/kafka2/kafka-logs:/tmp/kafka-logs
+            # - ./datafiles/kafka/kafka2/logs:/usr/local/kafka/logs
+    kafka3:
+        build: ./build
+        image: kafka2.6.0
+        ports:
+            - "9094:9092"
+        networks:
+            app_net:
+                # 固定子网ip，网段必须在子网络10.10.*.*
+                ipv4_address: 10.10.10.43
+        volumes:
+            - ./config/server3.properties:/usr/local/kafka/config/server.properties
+            - ./datafiles/kafka/kafka3/kafka-logs:/tmp/kafka-logs
+            # - ./datafiles/kafka/kafka3/logs:/usr/local/kafka/logs
+
+networks:
+    app_net:
+        external: true
